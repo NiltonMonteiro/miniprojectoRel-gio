@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relógio Digital e Analógico</title>
+  <style>
+    /* Variáveis de Tema */
+    :root {
+      --bg-color: #ffffff;
+      --text-color: black;
+      --button-bg: #908888;
+      --button-color: #000000;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      top:50%;
+      left:50%;
+      transform-origin: 0%;
+      transform: rotate(90);
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .clock {
+      font-size: 4rem;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+
+    .clock-analog {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border: 5px solid var(--text-color);
+      border-radius: 50%;
+      margin: 20px auto;
+    }
+
+    .hand {
+      position: absolute;
+      width: 50%;
+      height: 2px;
+      background-color: var(--text-color);
+      top: 50%;
+      left: 50%;
+      transform-origin: 0%;
+      transform: rotate(90deg);
+      transition: transform 0.5s cubic-bezier(0.4, 2.3, 0.3, 1);
+    }
+
+    .hand.second {
+      height: 1px;
+      background-color: red;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--button-bg);
+      color: var(--button-color);
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--button-color);
+      color: var(--button-bg);
+    }
+
+    /* Tema Escuro */
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --button-bg: #333333;
+      --button-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Relógio Digital e Analógico</h1>
+    <!-- Relógio Digital -->
+    <div id="clock" class="clock">00:00:00</div>
+
+    <!-- Relógio Analógico -->
+    <div id="clock-analog" class="clock-analog">
+      <div class="hand hour"></div>
+      <div class="hand minute"></div>
+      <div class="hand second"></div>
+    </div>
+
+    <!--formulário para defenir o alarme-->
+    <div>
+        <label for="alarm-time">Definir Alarme:</label>
+        <input type="time" id="alarm-time">
+        <button id="set-alarm">Ativar</button>
+      </div>
+      <div id="alarm-status"></div>
+
+    <!--codigo do cronometro-->
+
+    <div id="stopwatch">
+        <div id="stopwatch-time">00:00:00</div>
+        <button id="start-stopwatch">Iniciar</button>
+        <button id="pause-stopwatch">Pausar</button>
+        <button id="reset-stopwatch">Reiniciar</button>
+      </div>
+      
+      
+
+    <!-- Botão de Alternar Tema -->
+    <button id="toggle-theme">Alternar Tema</button>
+  </div>
+
+  <script>
+    //implementar o alarme//
+    let alarmTime = null;
+    let alarmTimeout = null;
+
+    document.getElementById('set-alarm').addEventListener('click', () => {
+    const input = document.getElementById('alarm-time');
+    alarmTime = input.value;
+
+  if (alarmTime) {
+    document.getElementById('alarm-status').textContent = `Alarme definido para ${alarmTime}`;
+    const [hours, minutes] = alarmTime.split(':');
+    const now = new Date();
+    const alarmDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+
+    const timeToAlarm = alarmDate - now;
+    if (timeToAlarm >= 0) {
+      clearTimeout(alarmTimeout);
+      alarmTimeout = setTimeout(() => {
+        alert('⏰ Alarme!');
+      }, timeToAlarm);
+    }
+  } else {
+    document.getElementById('alarm-status').textContent = 'Horário inválido.';
+  }
+});
+    //codigo do cronometro//
+    let stopwatchInterval = null;
+let stopwatchTime = 0;
+
+function updateStopwatchDisplay() {
+  const hours = String(Math.floor(stopwatchTime / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((stopwatchTime % 3600) / 60)).padStart(2, '0');
+  const seconds = String(stopwatchTime % 60).padStart(2, '0');
+  document.getElementById('stopwatch-time').textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+document.getElementById('start-stopwatch').addEventListener('click', () => {
+  if (!stopwatchInterval) {
+    stopwatchInterval = setInterval(() => {
+      stopwatchTime++;
+      updateStopwatchDisplay();
+    }, 1000);
+  }
+});
+
+document.getElementById('pause-stopwatch').addEventListener('click', () => {
+  clearInterval(stopwatchInterval);
+  stopwatchInterval = null;
+});
+
+document.getElementById('reset-stopwatch').addEventListener('click', () => {
+  clearInterval(stopwatchInterval);
+  stopwatchInterval = null;
+  stopwatchTime = 0;
+  updateStopwatchDisplay();
+});
+
+updateStopwatchDisplay();
+
+
+
+
+
+
+    // Função para atualizar o relógio digital
+    function updateClock() {
+      const clockElement = document.getElementById('clock');
+      const now = new Date();
+
+      // Formatar hora, minutos e segundos
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      // Atualizar o relógio digital
+      clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    // Função para atualizar o relógio analógico
+    function updateAnalogClock() {
+      const now = new Date();
+      const seconds = now.getSeconds();
+      const minutes = now.getMinutes();
+      const hours = now.getHours();
+
+      // Calcular ângulos
+      const secondDeg = (seconds / 60) * 360;
+      const minuteDeg = (minutes / 60) * 360 + (seconds / 60) * 6;
+      const hourDeg = (hours / 12) * 360 + (minutes / 60) * 30;
+
+      // Atualizar os ponteiros
+      document.querySelector('.hand.second').style.transform = `rotate(${90 + secondDeg}deg)`;
+      document.querySelector('.hand.minute').style.transform = `rotate(${90 + minuteDeg}deg)`;
+      document.querySelector('.hand.hour').style.transform = `rotate(${90 + hourDeg}deg)`;
+    }
+
+    // Alternar tema claro/escuro
+    const toggleThemeButton = document.getElementById('toggle-theme');
+    toggleThemeButton.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+
+    // Atualizar relógios a cada segundo
+    setInterval(() => {
+      updateClock();
+      updateAnalogClock();
+    }, 1000);
+
+    // Inicializar relógios
+    updateClock();
+    updateAnalogClock();
+  </script>
+</body>
+</html>
